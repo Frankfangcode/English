@@ -180,7 +180,7 @@
         <h1>英文考題產生器</h1>
 
         <div id="step1-container">
-            <h2>步驟一：勾選題目 (可拖曳或 Shift+點擊 連續選取)</h2>
+            <h2>步驟一：請手動勾選題目</h2>
             <div class="controls">
                 <button id="selectAllBtn">全選</button>
                 <button id="deselectAllBtn" class="secondary">全不選</button>
@@ -605,51 +605,6 @@
         generateAnswersBtn.addEventListener('click', () => displayAnswers(getSelectedQuestions()));
         generateStudyGuideBtn.addEventListener('click', () => displayStudyGuide(getSelectedQuestions()));
         
-        // --- 拖曳勾選與 Shift 點擊邏輯 ---
-        let lastCheckedIndex = null;
-        let isMouseDown = false;
-        let startCheckboxState = false;
-
-        selectionContainer.addEventListener('mousedown', (e) => {
-            const targetCheckbox = e.target.closest('.selection-item')?.querySelector('input[type="checkbox"]');
-            if (!targetCheckbox) return;
-
-            e.preventDefault();
-
-            isMouseDown = true;
-            selectionContainer.classList.add('is-selecting');
-            
-            startCheckboxState = !targetCheckbox.checked;
-            targetCheckbox.checked = startCheckboxState;
-
-            const currentIndex = parseInt(targetCheckbox.dataset.index, 10);
-            if (e.shiftKey && lastCheckedIndex !== null) {
-                const checkboxes = Array.from(selectionContainer.querySelectorAll('input[type="checkbox"]'));
-                const start = Math.min(lastCheckedIndex, currentIndex);
-                const end = Math.max(lastCheckedIndex, currentIndex);
-                for (let i = start; i <= end; i++) {
-                    checkboxes[i].checked = startCheckboxState;
-                }
-            }
-            lastCheckedIndex = currentIndex;
-            updateCounter();
-        });
-
-        selectionContainer.addEventListener('mouseover', (e) => {
-            if (isMouseDown) {
-                const targetCheckbox = e.target.closest('.selection-item')?.querySelector('input[type="checkbox"]');
-                if (targetCheckbox && targetCheckbox.checked !== startCheckboxState) {
-                    targetCheckbox.checked = startCheckboxState;
-                    updateCounter();
-                }
-            }
-        });
-        
-        document.addEventListener('mouseup', () => {
-            isMouseDown = false;
-            selectionContainer.classList.remove('is-selecting');
-        });
-
         // 頁面載入時，渲染勾選列表並初始化計數器
         window.addEventListener('load', () => {
             renderSelectionList();
