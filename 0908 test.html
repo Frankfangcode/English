@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>學測英文作文核心詞彙與句型 - 精準提示版</title>
+    <title>學測英文作文核心詞彙與句型 - 最終版</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -120,6 +120,28 @@
             padding: 5px 10px;
             border-radius: 4px;
         }
+        .mc-options {
+            margin-top: 10px;
+        }
+        .mc-option {
+            display: inline-block;
+            margin-right: 15px;
+            padding: 5px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            cursor: default;
+            transition: all 0.2s ease;
+        }
+        .mc-option.correct-choice {
+            background-color: #eaf5ff;
+            border-color: #3498db;
+            color: #2980b9;
+            font-weight: bold;
+        }
+        .mc-option.incorrect-choice {
+            color: #adb5bd;
+            background-color: #f1f3f5;
+        }
         .toggle-btn {
             display: block;
             width: 100%;
@@ -148,19 +170,31 @@
 <body>
 
     <div class="container">
-        <h1>學測英文作文核心詞彙與句型 </h1>
-        <p class="instructions">思考空格答案，翻譯題可參考句型提示，完成後點擊最下方按鈕以顯示或隱藏答案。</p>
+        <h1>學測英文作文核心詞彙與句型 - 最終版</h1>
+        <p class="instructions">思考答案，完成後點擊最下方按鈕以顯示或隱藏答案。</p>
 
         <form id="quizForm">
             
             <section>
                 <h3>第一部分：針對錯題複習 (Targeted Error Review)</h3>
                 <ol>
-                    <li>After being sick for a week, I had to study late every night to <span class="blank-container"><span class="blank">catch up with</span><span class="answer-text">catch up with</span></span> my classmates.
+                    <li>After being sick for a week, I had to study late every night to ______ my classmates.
+                        <div class="mc-options">
+                            <span class="mc-option" data-correct="true">(A) catch up with</span>
+                            <span class="mc-option">(B) get over</span>
+                        </div>
                     </li>
-                    <li>The doctor advised him to <span class="blank-container"><span class="blank">cut down on</span><span class="answer-text">cut down on</span></span> smoking if he wanted to improve his health.
+                    <li>The doctor advised him to ______ smoking if he wanted to improve his health.
+                        <div class="mc-options">
+                             <span class="mc-option">(A) hand in</span>
+                             <span class="mc-option" data-correct="true">(B) cut down on</span>
+                        </div>
                     </li>
-                    <li>Our school decided to <span class="blank-container"><span class="blank">do away with</span><span class="answer-text">do away with</span></span> the old rule of having to wear uniforms on Saturdays.
+                    <li>Our school decided to ______ the old rule of having to wear uniforms on Saturdays.
+                        <div class="mc-options">
+                            <span class="mc-option">(A) carry out</span>
+                            <span class="mc-option" data-correct="true">(B) do away with</span>
+                        </div>
                     </li>
                     <li class="translation-item">
                         當我聽到那個令人寬慰的消息時，我深深地鬆了一口氣。
@@ -235,25 +269,40 @@
 
         function toggleAnswers() {
             const btn = document.getElementById('toggleBtn');
-            const answerElements = document.querySelectorAll('.answer-text');
-            const blankElements = document.querySelectorAll('.blank');
-
             answersVisible = !answersVisible; 
 
+            // Handle fill-in-the-blanks and translation
+            const answerTexts = document.querySelectorAll('.answer-text');
+            const blanks = document.querySelectorAll('.blank');
+
             if (answersVisible) {
-                answerElements.forEach(el => el.classList.add('revealed'));
-                blankElements.forEach(el => el.style.display = 'none');
+                answerTexts.forEach(el => el.classList.add('revealed'));
+                blanks.forEach(el => el.style.display = 'none');
                 btn.textContent = '隱藏答案';
                 btn.classList.add('toggled');
             } else {
-                answerElements.forEach(el => el.classList.remove('revealed'));
-                blankElements.forEach(el => el.style.display = 'inline-block');
+                answerTexts.forEach(el => el.classList.remove('revealed'));
+                blanks.forEach(el => el.style.display = 'inline-block');
                 btn.textContent = '顯示答案';
                 btn.classList.remove('toggled');
             }
+            
+            // Handle multiple choice options
+            const mcOptions = document.querySelectorAll('.mc-option');
+            mcOptions.forEach(option => {
+                const isCorrect = option.getAttribute('data-correct') === 'true';
+                if (answersVisible) {
+                    if (isCorrect) {
+                        option.classList.add('correct-choice');
+                    } else {
+                        option.classList.add('incorrect-choice');
+                    }
+                } else {
+                    option.classList.remove('correct-choice', 'incorrect-choice');
+                }
+            });
         }
     </script>
 
 </body>
 </html>
-
