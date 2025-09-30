@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家教請款單</title>
+    <title>家教請款單 - 孝澤 2025年9月</title>
     <style>
         body {
             font-family: 'Microsoft JhengHei', '微軟正黑體', 'PingFang TC', '蘋方-繁', sans-serif;
@@ -13,9 +13,13 @@
             align-items: center;
             padding: 20px;
             color: #333;
+            min-height: 100vh;
+            box-sizing: border-box;
+            margin: 0;
         }
         .invoice-wrapper {
-            width: 800px;
+            width: 100%;
+            max-width: 800px;
             border: 1px solid #ddd;
             background-color: #fff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -23,6 +27,7 @@
             display: flex;
             justify-content: space-between;
             gap: 40px;
+            box-sizing: border-box;
         }
         .invoice-details {
             width: 55%;
@@ -92,6 +97,9 @@
         }
         /* RWD: 當螢幕寬度小於 768px 時 */
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
             .invoice-wrapper {
                 flex-direction: column;
                 width: 100%;
@@ -113,7 +121,7 @@
 
     <div class="invoice-wrapper">
         <div class="invoice-details">
-            <h1>【 <span contenteditable="true">學生姓名</span> 】<span contenteditable="true">2023年 10月</span></h1>
+            <h1>【 孝澤 】2025年 9月</h1>
             <table>
                 <thead>
                     <tr>
@@ -123,31 +131,34 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td contenteditable="true">08/05 (日)</td>
-                        <td class="hours" contenteditable="true">2 hr</td>
+                        <td>09/01 (一)</td>
+                        <td class="hours">2 hr</td>
                     </tr>
                     <tr>
-                        <td contenteditable="true">08/15 (二)</td>
-                        <td class="hours" contenteditable="true">2 hr</td>
+                        <td>09/08 (一)</td>
+                        <td class="hours">2 hr</td>
                     </tr>
                     <tr>
-                        <td contenteditable="true">08/25 (六)</td>
-                        <td class="hours" contenteditable="true">2 hr</td>
+                        <td>09/15 (一)</td>
+                        <td class="hours">2 hr</td>
                     </tr>
                      <tr>
-                        <td contenteditable="true">08/25 (六)</td>
-                        <td class="hours" contenteditable="true">2 hr</td>
+                        <td>09/22 (一)</td>
+                        <td class="hours">2 hr</td>
                     </tr>
-
+                     <tr>
+                        <td>09/29 (一)</td>
+                        <td class="hours">2 hr</td>
+                    </tr>
                 </tbody>
                 <tfoot>
                     <tr class="total-hours">
                         <td>總 時 數：</td>
-                        <td contenteditable="true">6 hr</td>
+                        <td>10 hr</td>
                     </tr>
                     <tr class="total-fee">
                         <td>共 計：</td>
-                        <td contenteditable="true">$ 5100 元</td>
+                        <td contenteditable="true">$ 8500 元</td>
                     </tr>
                 </tfoot>
             </table>
@@ -156,12 +167,12 @@
         <div class="payment-info">
             <h2>匯款資訊</h2>
             <p><strong>【銀行代號】</strong>822</p>
-            <p><strong>【存簿帳號】</strong> <span contenteditable="true">請填寫你的帳號</span></p>
-            <p><strong>【戶　　名】</strong> <span contenteditable="true">請填寫你的姓名</span></p>
+            <p><strong>【存簿帳號】</strong> <span contenteditable="true">277543402503</span></p>
+            <p><strong>【戶　　名】</strong> <span contenteditable="true">方澤享</span></p>
             
             <div class="notes">
                 <p>匯款時請您附注「學生姓名及月份」<br>或告知「轉帳末 5 碼」，以利對帳，謝謝您！</p>
-                <p>左表是 <span contenteditable="true">10</span> 月份結算時數，若有疏漏敬請告知，感謝。</p>
+                <p>左表是 9 月份結算時數，若有疏漏敬請告知，感謝。</p>
             </div>
         </div>
     </div>
