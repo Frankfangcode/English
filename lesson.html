@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>課程</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: #08091a;
+      display: flex; flex-direction: column;
+      height: 100vh; overflow: hidden;
+    }
+
+    /* ── Top bar ── */
+    #topbar {
+      height: 50px; flex-shrink: 0;
+      background: rgba(8,9,26,0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      display: flex; align-items: center;
+      padding: 0 12px; gap: 10px;
+      z-index: 100;
+      transition: border-color 0.4s;
+    }
+
+    .home-btn {
+      padding: 5px 11px;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #94a3b8; font-size: 0.78rem;
+      text-decoration: none; white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .home-btn:hover { background: rgba(255,255,255,0.12); color: #e2e8f0; }
+
+    .sep {
+      width: 1px; height: 24px;
+      background: rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+
+    .breadcrumb {
+      flex: 1; min-width: 0;
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.78rem; overflow: hidden;
+    }
+    .bc-stage {
+      white-space: nowrap; font-weight: 500;
+      flex-shrink: 0;
+    }
+    .bc-arrow { color: rgba(255,255,255,0.25); flex-shrink: 0; }
+    .bc-lesson {
+      color: #e2e8f0; font-weight: 500;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .bc-count {
+      background: rgba(255,255,255,0.08);
+      border-radius: 100px; padding: 1px 7px;
+      font-size: 0.67rem; color: #94a3b8;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    .actions {
+      display: flex; align-items: center; gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      padding: 5px 12px; border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0; font-size: 0.78rem;
+      cursor: pointer; white-space: nowrap;
+      font-family: 'Noto Sans TC', sans-serif;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .nav-btn:hover:not(:disabled) { background: rgba(255,255,255,0.12); }
+    .nav-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+
+    #completeBtn {
+      border-radius: 7px;
+      padding: 5px 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0; font-size: 0.78rem;
+      cursor: pointer; white-space: nowrap;
+      font-family: 'Noto Sans TC', sans-serif;
+      transition: all 0.25s;
+    }
+    #completeBtn:hover { background: rgba(255,255,255,0.12); }
+
+    /* ── Progress line ── */
+    #progLine {
+      height: 3px; flex-shrink: 0;
+      background: rgba(255,255,255,0.05);
+      position: relative;
+    }
+    #progFill {
+      position: absolute; inset: 0;
+      border-radius: 0 2px 2px 0;
+      transition: width 0.5s ease, background 0.4s;
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: rgba(30,30,50,0.95);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; padding: 10px 20px;
+      font-size: 0.82rem; color: #e2e8f0;
+      pointer-events: none;
+      transition: transform 0.35s ease, opacity 0.35s;
+      opacity: 0; z-index: 999;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── iframe ── */
+    #frame {
+      flex: 1; width: 100%; border: none;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="topbar">
+    <a href="index.html" class="home-btn">🏠 地圖</a>
+    <div class="sep"></div>
+    <div class="breadcrumb">
+      <span class="bc-stage" id="bcStage">—</span>
+      <span class="bc-arrow">›</span>
+      <span class="bc-lesson" id="bcLesson">載入中…</span>
+      <span class="bc-count" id="bcCount"></span>
+    </div>
+    <div class="actions">
+      <button class="nav-btn" id="prevBtn" onclick="move(-1)" disabled>← 上一課</button>
+      <button id="completeBtn" onclick="toggleMastered()">☑ 標記完成</button>
+      <button class="nav-btn" id="nextBtn" onclick="move(1)">下一課 →</button>
+    </div>
+  </nav>
+
+  <div id="progLine"><div id="progFill"></div></div>
+
+  <iframe id="frame" src="about:blank" allowfullscreen></iframe>
+
+  <div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  DATA (mirror of index.html)
+// ═══════════════════════════════════════
+const STAGES = [
+  {id:1,si:0,icon:"🏗️",color:"#22c55e",title:"段落基礎",lessons:[
+    {id:"l1_1",title:"Unit 1｜寫作入門",url:"first.html"},
+    {id:"l1_4",title:"Unit 1｜完整精裝互動手冊",url:"0908.html"},
+    {id:"l1_2",title:"Unit 5｜漢堡段落寫法",url:"Unit5.html"},
+    {id:"l1_5",title:"Unit 5｜英文作文這樣寫就OK",url:"unit5_2.html"},
+    {id:"l1_3",title:"腦力激盪 & 句子加長",url:"Unit2_3腦力激盪_句子加長.html"},
+  ]},
+  {id:2,si:1,icon:"⚙️",color:"#3b82f6",title:"句型與文法",lessons:[
+    {id:"l2_1",title:"英文時態懶人包",url:"英文時態懶人包.html"},
+    {id:"l2_2",title:"Unit 4｜轉折詞",url:"Unit4轉折詞.html"},
+    {id:"l2_3",title:"轉承詞大集合",url:"轉承詞大集合.html"},
+    {id:"l2_4",title:"分詞構句",url:"分詞構句.html"},
+    {id:"l2_5",title:"及物與不及物動詞",url:"及物不及物.html"},
+    {id:"l2_6",title:"Who vs. Whom",url:"who-vs-whom.html"},
+    {id:"l2_7",title:"動詞片語總整理",url:"動詞片語總整理.html"},
+    {id:"l2_8",title:"萬用句型",url:"萬用句.html"},
+    {id:"l2_9",title:"句型練習",url:"20260102/句型.html"},
+    {id:"l2_10",title:"核心詞彙與句型複習",url:"0901.html"},
+    {id:"l2_11",title:"學測英文文法戰略手冊",url:"20260102/翻譯和句型.html"},
+    {id:"l2_12",title:"句型系統化學習地圖",url:"20251117/句型練習.html"},
+    {id:"l2_13",title:"澤享文法戰術中心",url:"柏宏/index.html"},
+    {id:"l2_14",title:"不定詞魔法實驗室",url:"柏宏/2.html"},
+  ]},
+  {id:3,si:2,icon:"🎯",color:"#a855f7",title:"題型攻略",lessons:[
+    {id:"l3_0",title:"學測五大題型總覽（互動完整版）",url:"0722v2.html"},
+    {id:"l3_1",title:"破題法",url:"20251013/破題.html"},
+    {id:"l3_2",title:"圖表題寫作技巧",url:"20251013/圖表題.html"},
+    {id:"l3_3",title:"Unit 6｜敘述文",url:"Unit6.html"},
+    {id:"l3_4",title:"感官描寫技巧",url:"20251013/感官描寫.html"},
+    {id:"l3_5",title:"範例練習｜颱風假該不該放？",url:"0707v2.html"},
+  ]},
+  {id:4,si:3,icon:"🔥",color:"#f97316",title:"精準度訓練",lessons:[
+    {id:"l4_1",title:"Unit 7｜弱點擊破",url:"Unit7.html"},
+    {id:"l4_2",title:"寫作精準度 Quiz 一",url:"0728quiz.html"},
+    {id:"l4_3",title:"寫作精準度 Quiz 二",url:"0728quiz2.html"},
+    {id:"l4_4",title:"英文考題產生器",url:"英文考題產生器.html"},
+    {id:"l4_5",title:"GSAT 弱點擊破 v3.1（暗色版）",url:"20251126/1.html"},
+    {id:"l4_6",title:"GSAT 弱點擊破 v3.2 Hard Mode",url:"20251126/hard.html"},
+    {id:"l4_7",title:"GSAT 弱點擊破 v4.0 Final Review",url:"20251126/custom.html"},
+  ]},
+  {id:5,si:4,icon:"✍️",color:"#ec4899",title:"實戰批改",lessons:[
+    {id:"l5_1",title:"範文分析",url:"範文分析.html"},
+    {id:"l5_8",title:"作文批改｜表情符號的使用",url:"0728writing.html"},
+    {id:"l5_9",title:"擺脫直翻｜建立英文思維（互動版）",url:"0815v2.html"},
+    {id:"l5_10",title:"孝澤的作文批改合輯",url:"20251117/index.html"},
+    {id:"l5_2",title:"診斷｜公園設計",url:"20251224/park.html"},
+    {id:"l5_3",title:"診斷｜花園設計",url:"20251224/garden.html"},
+    {id:"l5_4",title:"診斷｜Robot Helper",url:"20251224/robot.html"},
+    {id:"l5_5",title:"診斷｜在家 vs 咖啡廳",url:"20251224/study.html"},
+    {id:"l5_11",title:"診斷｜畢業旅行計畫",url:"20251224/index.html"},
+    {id:"l5_6",title:"診斷｜Education vs Skills",url:"20260102/Educationvs.Skills.html"},
+    {id:"l5_7",title:"診斷｜Technology Replacement",url:"20260111/technologyreplacement.html"},
+  ]},
+  {id:6,si:5,icon:"🏆",color:"#eab308",title:"模擬考",lessons:[
+    {id:"l6_5",title:"學測終極戰術板（最新版）",url:"20260111/new.html"},
+    {id:"l6_6",title:"學測終極戰術板（20分鐘急救版）",url:"20260102/new.html"},
+    {id:"l6_1",title:"模擬考 9/8",url:"0908 test.html"},
+    {id:"l6_2",title:"模擬考 9/15",url:"0915考題.html"},
+    {id:"l6_3",title:"模擬考 9/22",url:"0922考題.html"},
+    {id:"l6_4",title:"題庫練習",url:"題庫.html"},
+  ]},
+];
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+const params = new URLSearchParams(location.search);
+let si = Math.max(0, Math.min(parseInt(params.get('si'))||0, STAGES.length-1));
+let li = 0;
+
+function clampLi(){ li = Math.max(0, Math.min(li, STAGES[si].lessons.length-1)); }
+
+li = parseInt(params.get('li'))||0;
+clampLi();
+
+// ═══════════════════════════════════════
+//  PROGRESS
+// ═══════════════════════════════════════
+function gp(id){ return { v:localStorage.getItem('v_'+id)==='1', m:localStorage.getItem('m_'+id)==='1' }; }
+function setV(id){ localStorage.setItem('v_'+id,'1'); }
+function setM(id,val){ localStorage.setItem('m_'+id, val?'1':'0'); }
+
+// ═══════════════════════════════════════
+//  UI UPDATE
+// ═══════════════════════════════════════
+function update(){
+  const stage = STAGES[si];
+  const lesson = stage.lessons[li];
+  const p = gp(lesson.id);
+  const c = stage.color;
+
+  // Topbar border colour
+  document.getElementById('topbar').style.borderBottomColor = c+'44';
+
+  // Breadcrumb
+  document.getElementById('bcStage').textContent  = `${stage.icon} 第${stage.id}關 ${stage.title}`;
+  document.getElementById('bcStage').style.color  = c;
+  document.getElementById('bcLesson').textContent = lesson.title;
+  document.getElementById('bcCount').textContent  = `${li+1} / ${stage.lessons.length}`;
+
+  // Complete button
+  const btn = document.getElementById('completeBtn');
+  if(p.m){
+    btn.style.background   = c+'28';
+    btn.style.borderColor  = c;
+    btn.style.color        = c;
+    btn.textContent        = '✅ 已掌握';
+  } else {
+    btn.style.background  = 'rgba(255,255,255,0.05)';
+    btn.style.borderColor = 'rgba(255,255,255,0.1)';
+    btn.style.color       = '#e2e8f0';
+    btn.textContent       = '☑ 標記完成';
+  }
+
+  // Prev / Next
+  document.getElementById('prevBtn').disabled = (si===0 && li===0);
+  document.getElementById('nextBtn').disabled = (si===STAGES.length-1 && li===stage.lessons.length-1);
+
+  // Progress line
+  const pct = (li+1)/stage.lessons.length*100;
+  document.getElementById('progFill').style.width = pct+'%';
+  document.getElementById('progFill').style.background = c;
+
+  // Load iframe
+  document.getElementById('frame').src = lesson.url;
+
+  // Auto-mark visited
+  setV(lesson.id);
+
+  // Page title
+  document.title = lesson.title + ' ｜ ' + stage.title;
+
+  // Update URL silently
+  const u = new URL(location);
+  u.searchParams.set('si', si);
+  u.searchParams.set('li', li);
+  history.replaceState(null,'',u);
+}
+
+// ═══════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════
+function move(dir){
+  let nsi=si, nli=li+dir;
+  if(nli < 0){
+    nsi = si-1;
+    if(nsi < 0) return;
+    nli = STAGES[nsi].lessons.length-1;
+  } else if(nli >= STAGES[si].lessons.length){
+    nsi = si+1;
+    if(nsi >= STAGES.length) return;
+    nli = 0;
+  }
+  si=nsi; li=nli;
+  update();
+}
+
+// ═══════════════════════════════════════
+//  COMPLETE TOGGLE
+// ═══════════════════════════════════════
+function toggleMastered(){
+  const lesson = STAGES[si].lessons[li];
+  const cur = gp(lesson.id).m;
+  setM(lesson.id, !cur);
+  update();
+  toast(cur ? '已取消掌握標記' : '✅ 已標記為掌握！');
+}
+
+// ═══════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.classList.remove('show'), 2200);
+}
+
+// ═══════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════
+document.addEventListener('keydown', e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  if(e.key==='ArrowRight') move(1);
+  if(e.key==='ArrowLeft')  move(-1);
+  if(e.key==='Enter')      toggleMastered();
+});
+
+// ── Init ─────────────────────────────────
+update();
+</script>
+</body>
+</html>
