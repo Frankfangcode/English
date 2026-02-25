@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轉承詞三階段練習</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        /* ── Stage Tabs ── */
+        .stage-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+        .stage-tab {
+            flex: 1;
+            padding: 14px 10px;
+            border: 2px solid #bdc3c7;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.95em;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .stage-tab:hover { border-color: #3498db; background: #eaf5ff; }
+        .stage-tab.active { background: #3498db; color: white; border-color: #3498db; }
+        .stage-tab .snum { font-size: 1.3em; font-weight: bold; display: block; }
+        .stage-tab .sname { font-size: 0.82em; }
+
+        /* ── Panels ── */
+        .stage-panel { display: none; }
+        .stage-panel.active { display: block; }
+        .panel-desc { color: #7f8c8d; margin-top: 0; margin-bottom: 18px; font-size: 0.95em; }
+
+        /* ── Passage Nav ── */
+        .passage-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .nav-btn {
+            padding: 8px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .nav-btn:hover { background: #2980b9; }
+        .nav-btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+        .passage-counter { color: #7f8c8d; font-size: 0.9em; font-weight: 600; }
+        .passage-title { color: #7f8c8d; font-size: 0.85em; font-style: italic; }
+
+        /* ── Passage Box ── */
+        .passage-box {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 22px 25px;
+            border-radius: 0 10px 10px 0;
+            font-size: 1.05em;
+            line-height: 2.4;
+            margin-bottom: 18px;
+            min-height: 120px;
+        }
+
+        /* ── Stage 1: Blank Buttons ── */
+        .blank-btn {
+            display: inline-block;
+            min-width: 130px;
+            padding: 3px 12px;
+            border: 2px dashed #3498db;
+            border-radius: 6px;
+            background: #eaf5ff;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-family: inherit;
+            text-align: center;
+            transition: all 0.2s;
+            color: #2980b9;
+            font-weight: 500;
+            vertical-align: middle;
+            position: relative;
+        }
+        .blank-btn:hover:not(.answered) { background: #d5eaf5; transform: translateY(-1px); }
+        .blank-btn.active-blank { border-style: solid; border-color: #e67e22; background: #fef9e7; color: #d35400; }
+        .blank-btn.answered-correct { background: #d4edda; border-color: #28a745; border-style: solid; color: #155724; cursor: default; }
+        .blank-btn.answered-wrong { background: #f8d7da; border-color: #dc3545; border-style: solid; color: #721c24; cursor: default; }
+        .blank-hint { font-size: 0.75em; color: #7f8c8d; display: block; font-weight: normal; }
+
+        /* ── Options Panel (Stage 1) ── */
+        .options-panel {
+            display: none;
+            padding: 15px;
+            background: #fff9f0;
+            border: 2px solid #e67e22;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .options-panel.show { display: block; }
+        .options-panel-label { margin: 0 0 12px; font-size: 0.9em; color: #e67e22; font-weight: 600; }
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+        }
+        .option-item {
+            padding: 10px 16px;
+            background: white;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-family: inherit;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .option-item:hover { border-color: #3498db; background: #eaf5ff; transform: translateY(-2px); }
+
+        /* ── Stage 1 Score ── */
+        .score-box {
+            display: none;
+            text-align: center;
+            padding: 14px;
+            background: #f0fff4;
+            border-radius: 10px;
+            border: 2px solid #27ae60;
+            margin-top: 12px;
+        }
+        .score-big { font-size: 1.8em; font-weight: bold; color: #27ae60; }
+        .score-msg { color: #555; font-size: 0.9em; margin-top: 4px; }
+
+        /* ── Stage 2: Input Blanks ── */
+        .blank-input {
+            display: inline-block;
+            min-width: 160px;
+            padding: 3px 10px;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-family: inherit;
+            background: white;
+            outline: none;
+            transition: all 0.2s;
+            vertical-align: middle;
+        }
+        .blank-input:focus { border-color: #2980b9; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
+        .blank-input.correct { border-color: #28a745; background: #d4edda; color: #155724; }
+        .blank-input.wrong { border-color: #dc3545; background: #f8d7da; color: #721c24; }
+        .blank-input::placeholder { color: #aaa; font-style: italic; font-size: 0.88em; }
+
+        .check-btn {
+            display: block;
+            margin: 18px auto 0;
+            padding: 12px 40px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05em;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .check-btn:hover { background: #219a52; }
+        .reset-btn {
+            display: block;
+            margin: 10px auto 0;
+            padding: 10px 30px;
+            background: white;
+            color: #7f8c8d;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .reset-btn:hover { border-color: #3498db; color: #3498db; }
+
+        /* ── Answer Key ── */
+        .answer-key {
+            display: none;
+            margin-top: 16px;
+            padding: 16px 20px;
+            background: #fffde7;
+            border-radius: 8px;
+            border: 1px solid #f39c12;
+        }
+        .answer-key h4 { margin: 0 0 12px; color: #e67e22; font-size: 0.95em; }
+        .answer-item { margin-bottom: 8px; font-size: 0.9em; line-height: 1.6; }
+        .answer-accepted { color: #27ae60; font-weight: 600; }
+        .answer-wrong-indicator { color: #dc3545; }
+        .answer-correct-indicator { color: #27ae60; }
+
+        /* ── Stage 3 ── */
+        .prompt-selector { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .prompt-btn {
+            padding: 8px 16px;
+            border: 2px solid #f39c12;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.88em;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .prompt-btn:hover, .prompt-btn.active { background: #f39c12; color: white; }
+        .writing-prompt {
+            background: #fffde7;
+            border-left: 4px solid #f39c12;
+            padding: 18px 22px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 18px;
+        }
+        .writing-prompt h3 { margin: 0 0 8px; color: #e67e22; font-size: 1em; }
+        .writing-prompt p { margin: 0; font-size: 1em; line-height: 1.7; }
+
+        .hint-panel {
+            background: #eaf5ff;
+            border: 1px solid #3498db;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+        }
+        .hint-panel h4 { margin: 0 0 10px; color: #2980b9; font-size: 0.9em; }
+        .hint-cats-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+        .hint-cat {
+            background: white;
+            border: 1px solid #3498db;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.82em;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .hint-cat:hover { background: #3498db; color: white; }
+        .hint-cat.open { background: #3498db; color: white; }
+        .hint-words-box {
+            display: none;
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: white;
+            border-radius: 8px;
+            font-size: 0.88em;
+            color: #2c3e50;
+            line-height: 1.8;
+        }
+        .hint-words-box.show { display: block; }
+
+        #essay-area {
+            width: 100%;
+            height: 200px;
+            padding: 14px;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            font-size: 1em;
+            font-family: inherit;
+            line-height: 1.8;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        #essay-area:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
+        .word-count-row { text-align: right; color: #7f8c8d; font-size: 0.85em; margin-top: 5px; }
+        .essay-controls { display: flex; gap: 10px; margin-top: 14px; justify-content: center; }
+        .analyze-btn {
+            padding: 12px 35px;
+            background: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05em;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .analyze-btn:hover { background: #8e44ad; }
+        .clear-essay-btn {
+            padding: 12px 25px;
+            background: white;
+            color: #7f8c8d;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            font-size: 1.05em;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .clear-essay-btn:hover { border-color: #9b59b6; color: #9b59b6; }
+
+        #essay-feedback { display: none; margin-top: 22px; }
+        .essay-score-box {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .essay-score-big { font-size: 3em; font-weight: bold; }
+        .essay-score-label { font-size: 1em; opacity: 0.9; margin-top: 4px; }
+        .essay-score-sub { font-size: 0.85em; opacity: 0.75; margin-top: 6px; }
+
+        .highlighted-essay {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            line-height: 2.2;
+            font-size: 1em;
+            margin-bottom: 18px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .hw { background: #ffd700; padding: 1px 3px; border-radius: 3px; font-weight: 600; }
+
+        .cat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .cat-chip {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.88em;
+            border: 2px solid;
+        }
+        .cat-chip.used { background: #d4edda; border-color: #28a745; color: #155724; }
+        .cat-chip.not-used { background: #f8f9fa; border-color: #dee2e6; color: #6c757d; }
+        .cat-chip .cn { font-weight: 700; display: block; margin-bottom: 4px; }
+        .cat-chip .cw { font-size: 0.82em; }
+
+        /* ── Responsive ── */
+        @media (max-width: 680px) {
+            body { padding: 10px; }
+            .container { padding: 16px 18px; }
+            .stage-tabs { flex-direction: column; gap: 6px; }
+            .stage-tab { display: flex; align-items: center; gap: 8px; text-align: left; }
+            .stage-tab .snum { display: inline; font-size: 1.1em; }
+            .passage-box { line-height: 2.6; }
+            .options-grid { grid-template-columns: 1fr 1fr; }
+            .cat-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>轉承詞三階段練習</h1>
+
+    <!-- Stage Tabs -->
+    <div class="stage-tabs">
+        <button class="stage-tab active" onclick="switchStage(1)">
+            <span class="snum">第一關</span>
+            <span class="sname">選擇填空（四選一）</span>
+        </button>
+        <button class="stage-tab" onclick="switchStage(2)">
+            <span class="snum">第二關</span>
+            <span class="sname">自行填空（無提示）</span>
+        </button>
+        <button class="stage-tab" onclick="switchStage(3)">
+            <span class="snum">第三關</span>
+            <span class="sname">寫作練習</span>
+        </button>
+    </div>
+
+    <!-- ══ STAGE 1 ══ -->
+    <div id="stage1" class="stage-panel active">
+        <p class="panel-desc">看文章脈絡，點擊空格，從四個選項中選出最適合的轉承詞。</p>
+        <div class="passage-nav">
+            <button class="nav-btn" id="s1-prev" onclick="changePassage(1,-1)" disabled>← 上一篇</button>
+            <div style="text-align:center">
+                <div class="passage-counter" id="s1-counter">第 1 篇 / 共 5 篇</div>
+                <div class="passage-title" id="s1-title"></div>
+            </div>
+            <button class="nav-btn" id="s1-next" onclick="changePassage(1,1)">下一篇 →</button>
+        </div>
+        <div class="passage-box" id="s1-passage"></div>
+        <div class="options-panel" id="s1-options">
+            <p class="options-panel-label" id="s1-options-label">選擇適合的轉承詞：</p>
+            <div class="options-grid" id="s1-options-grid"></div>
+        </div>
+        <div class="score-box" id="s1-score">
+            <div class="score-big" id="s1-score-num"></div>
+            <div class="score-msg" id="s1-score-msg"></div>
+        </div>
+    </div>
+
+    <!-- ══ STAGE 2 ══ -->
+    <div id="stage2" class="stage-panel">
+        <p class="panel-desc">在空格中輸入適合的轉承詞（大小寫不拘，可接受同義詞），完成後按「批改答案」。</p>
+        <div class="passage-nav">
+            <button class="nav-btn" id="s2-prev" onclick="changePassage(2,-1)" disabled>← 上一篇</button>
+            <div style="text-align:center">
+                <div class="passage-counter" id="s2-counter">第 1 篇 / 共 5 篇</div>
+                <div class="passage-title" id="s2-title"></div>
+            </div>
+            <button class="nav-btn" id="s2-next" onclick="changePassage(2,1)">下一篇 →</button>
+        </div>
+        <div class="passage-box" id="s2-passage"></div>
+        <button class="check-btn" id="s2-check-btn" onclick="checkStage2()">批改答案</button>
+        <button class="reset-btn" id="s2-reset-btn" onclick="resetStage2()" style="display:none">重新作答</button>
+        <div class="score-box" id="s2-score">
+            <div class="score-big" id="s2-score-num"></div>
+            <div class="score-msg" id="s2-score-msg"></div>
+        </div>
+        <div class="answer-key" id="s2-answer-key">
+            <h4>詳細批改：</h4>
+            <div id="s2-answers-list"></div>
+        </div>
+    </div>
+
+    <!-- ══ STAGE 3 ══ -->
+    <div id="stage3" class="stage-panel">
+        <p class="panel-desc">根據題目寫一段英文文章（建議 80-150 字），盡量使用多種轉承詞，完成後按「分析文章」。</p>
+        <div class="prompt-selector" id="prompt-selector"></div>
+        <div class="writing-prompt">
+            <h3>✍️ 寫作題目</h3>
+            <p id="current-prompt"></p>
+        </div>
+        <div class="hint-panel">
+            <h4>轉承詞速查 <span style="color:#7f8c8d;font-weight:normal">（點擊類別展開詞彙）</span></h4>
+            <div class="hint-cats-wrap" id="hint-cats"></div>
+            <div class="hint-words-box" id="hint-words-box"></div>
+        </div>
+        <textarea id="essay-area" placeholder="Start writing here...&#10;在這裡開始寫作..."></textarea>
+        <div class="word-count-row">字數：<span id="word-count">0</span></div>
+        <div class="essay-controls">
+            <button class="analyze-btn" onclick="analyzeEssay()">分析文章</button>
+            <button class="clear-essay-btn" onclick="clearEssay()">清除重寫</button>
+        </div>
+        <div id="essay-feedback">
+            <h3 style="color:#9b59b6;margin-bottom:12px">分析結果</h3>
+            <div class="essay-score-box">
+                <div class="essay-score-big" id="essay-score-num">0</div>
+                <div class="essay-score-label">個轉承詞類別</div>
+                <div class="essay-score-sub" id="essay-score-sub"></div>
+            </div>
+            <h4 style="color:#555;margin-bottom:8px">已偵測到的轉承詞（已標示）：</h4>
+            <div class="highlighted-essay" id="highlighted-text"></div>
+            <h4 style="color:#555;margin-bottom:8px">類別覆蓋率：</h4>
+            <div class="cat-grid" id="category-results"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  PASSAGE DATA
+// ═══════════════════════════════════════════════
+const passages = [
+  {
+    title: 'Exercise & Health',
+    segments: [
+      { t: 'text', c: 'Regular exercise is essential for maintaining good health. ' },
+      { t: 'blank', id: 'p1b1', hint: '補充說明', accept: ['in addition', 'moreover', 'furthermore', 'additionally', 'besides', "what's more"] },
+      { t: 'text', c: ', it can significantly improve mental well-being. ' },
+      { t: 'blank', id: 'p1b2', hint: '讓步語氣', accept: ['despite', 'in spite of', 'notwithstanding'] },
+      { t: 'text', c: ' the demands of modern life, many people still find ways to stay active. ' },
+      { t: 'blank', id: 'p1b3', hint: '闡述事實', accept: ['in fact', 'actually', 'in reality', 'as a matter of fact', 'in truth', 'in effect'] },
+      { t: 'text', c: ', even 20 minutes of daily exercise can reduce stress levels considerably. ' },
+      { t: 'blank', id: 'p1b4', hint: '表示結果', accept: ['therefore', 'consequently', 'as a result', 'hence', 'thus', 'accordingly'] },
+      { t: 'text', c: ', health professionals consistently recommend physical activity as part of a healthy lifestyle.' }
+    ]
+  },
+  {
+    title: 'Technology & Society',
+    segments: [
+      { t: 'text', c: 'Technology has dramatically changed the way we live and work. ' },
+      { t: 'blank', id: 'p2b1', hint: '語氣轉折', accept: ['however', 'nevertheless', 'nonetheless', 'yet', 'still'] },
+      { t: 'text', c: ', not all of these changes have been positive. Social media, ' },
+      { t: 'blank', id: 'p2b2', hint: '舉例', accept: ['for example', 'for instance'] },
+      { t: 'text', c: ', has been linked to increased feelings of anxiety among teenagers. ' },
+      { t: 'blank', id: 'p2b3', hint: '表示結果', accept: ['therefore', 'consequently', 'as a result', 'hence', 'thus', 'for this reason'] },
+      { t: 'text', c: ', psychologists recommend setting daily limits on screen time. ' },
+      { t: 'blank', id: 'p2b4', hint: '換句話說', accept: ['in other words', 'that is to say', 'namely', 'to put it differently', 'that is'] },
+      { t: 'text', c: ', we should use technology as a tool, not let it control our lives.' }
+    ]
+  },
+  {
+    title: 'Traditional vs. Online Learning',
+    segments: [
+      { t: 'text', c: 'Traditional classroom learning has long been the standard form of education. ' },
+      { t: 'blank', id: 'p3b1', hint: '語氣轉折', accept: ['however', 'nevertheless', 'nonetheless', 'yet', 'still'] },
+      { t: 'text', c: ', the rise of online learning has presented a compelling alternative. ' },
+      { t: 'blank', id: 'p3b2', hint: '闡述事實', accept: ['in fact', 'actually', 'in reality', 'as a matter of fact', 'in truth', 'in effect'] },
+      { t: 'text', c: ', millions of students worldwide now choose digital platforms over physical classrooms. ' },
+      { t: 'blank', id: 'p3b3', hint: '讓步語氣', accept: ['despite', 'in spite of', 'notwithstanding'] },
+      { t: 'text', c: ' this trend, many educators argue that in-person interaction remains irreplaceable. ' },
+      { t: 'blank', id: 'p3b4', hint: '總結', accept: ['in conclusion', 'in short', 'to sum up', 'all in all', 'in brief', 'in summary', 'in a nutshell'] },
+      { t: 'text', c: ', the future of education likely lies in a balanced combination of both approaches.' }
+    ]
+  },
+  {
+    title: 'Air Pollution',
+    segments: [
+      { t: 'text', c: 'Air pollution is a growing concern in cities around the world. ' },
+      { t: 'blank', id: 'p4b1', hint: '表示原因', accept: ['due to', 'because of', 'owing to', 'on account of', 'as a result of'] },
+      { t: 'text', c: ' rapid industrialization and increased vehicle emissions, air quality has deteriorated significantly. ' },
+      { t: 'blank', id: 'p4b2', hint: '補充說明', accept: ['in addition', 'moreover', 'furthermore', 'additionally', 'besides', "what's more"] },
+      { t: 'text', c: ', the burning of fossil fuels continues to release harmful gases into the atmosphere. ' },
+      { t: 'blank', id: 'p4b3', hint: '表示結果', accept: ['therefore', 'consequently', 'as a result', 'hence', 'thus', 'accordingly'] },
+      { t: 'text', c: ', many governments have implemented stricter environmental regulations. ' },
+      { t: 'blank', id: 'p4b4', hint: '總結', accept: ['in conclusion', 'in short', 'to sum up', 'all in all', 'in brief', 'in summary'] },
+      { t: 'text', c: ', collective action is needed to address this global challenge.' }
+    ]
+  },
+  {
+    title: 'The Road to Success',
+    segments: [
+      { t: 'text', c: 'Success rarely comes without effort. ' },
+      { t: 'blank', id: 'p5b1', hint: '闡述事實', accept: ['in fact', 'actually', 'in reality', 'as a matter of fact', 'in truth', 'in effect'] },
+      { t: 'text', c: ', most successful people have faced numerous failures before reaching their goals. ' },
+      { t: 'blank', id: 'p5b2', hint: '補充說明', accept: ['moreover', 'in addition', 'furthermore', 'additionally', 'besides', "what's more"] },
+      { t: 'text', c: ', they typically demonstrate remarkable perseverance in the face of adversity. ' },
+      { t: 'blank', id: 'p5b3', hint: '讓步語氣', accept: ['despite', 'in spite of', 'notwithstanding'] },
+      { t: 'text', c: ' the challenges they encounter, they continue to push forward. ' },
+      { t: 'blank', id: 'p5b4', hint: '表示結果', accept: ['therefore', 'consequently', 'as a result', 'hence', 'thus', 'accordingly'] },
+      { t: 'text', c: ', it is determination and hard work, not talent alone, that ultimately leads to success.' }
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════
+//  TRANSITIONAL WORD CATEGORIES (for Stage 3)
+// ═══════════════════════════════════════════════
+const transCats = {
+  '補充說明': ['in addition', 'moreover', 'furthermore', 'additionally', 'besides', "what's more", 'apart from that', 'on top of that'],
+  '表示原因': ['due to', 'because of', 'owing to', 'on account of', 'thanks to', 'in view of', 'considering'],
+  '表示結果': ['hence', 'therefore', 'thus', 'consequently', 'accordingly', 'as a result', 'for this reason', 'as such'],
+  '讓步語氣': ['despite', 'in spite of', 'notwithstanding', 'regardless of'],
+  '語氣轉折': ['however', 'nonetheless', 'nevertheless', 'yet', 'still', 'though', 'whereas'],
+  '比較與對比': ['likewise', 'similarly', 'in the same way', 'conversely', 'on the contrary', 'in contrast', 'on the other hand', 'instead'],
+  '闡述事實': ['actually', 'in fact', 'in effect', 'in reality', 'as a matter of fact', 'in truth'],
+  '換句話說': ['in other words', 'that is to say', 'namely', 'to put it differently', 'that is'],
+  '舉例': ['for example', 'for instance', 'such as'],
+  '總結': ['in short', 'in brief', 'in conclusion', 'all in all', 'to sum up', 'in a nutshell', 'in summary', 'by and large'],
+  '時間順序': ['thereafter', 'afterwards', 'subsequently', 'henceforth', 'then', 'later'],
+};
+
+// ═══════════════════════════════════════════════
+//  WRITING PROMPTS
+// ═══════════════════════════════════════════════
+const prompts = [
+  { label: '科技影響', text: 'Discuss the positive and negative impacts of technology on modern society.\n（論述科技對現代社會的正面與負面影響）' },
+  { label: '成功關鍵', text: 'Explain what you think is the most important key to success.\n（說明你認為成功最重要的關鍵是什麼）' },
+  { label: '環境保護', text: 'Discuss the roles that individuals and governments should play in environmental protection.\n（論述個人與政府在環境保護中各自應扮演的角色）' },
+  { label: '教育方式', text: 'Compare the advantages and disadvantages of traditional classroom learning and online learning.\n（比較傳統課堂學習與線上學習的優缺點）' },
+];
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+const st = {
+  s1idx: 0,
+  s2idx: 0,
+  s1answers: {},   // blankId -> { selected, isCorrect }
+  activeBlank: null, // { id, accept, btnEl }
+  s1options: {},   // blankId -> [opt1, opt2, opt3, opt4]
+  promptIdx: 0,
+};
+
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
+function shuffleArr(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function normalize(s) {
+  return s.toLowerCase().trim().replace(/[.,!?;:]$/, '');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Generate 4 options: 1 correct (accept[0]) + 3 distractors from OTHER categories
+function makeOptions(blankId, accept) {
+  if (st.s1options[blankId]) return st.s1options[blankId];
+
+  // Find which category the correct answer belongs to
+  const correctWord = accept[0];
+  let correctCat = null;
+  for (const [cat, words] of Object.entries(transCats)) {
+    if (words.some(w => accept.includes(w))) { correctCat = cat; break; }
+  }
+
+  // Pick distractors from other categories (one per category)
+  const otherCats = Object.entries(transCats).filter(([c]) => c !== correctCat);
+  shuffleArr(otherCats);
+  const distractors = [];
+  for (const [, words] of otherCats) {
+    if (distractors.length >= 3) break;
+    const w = [...words];
+    shuffleArr(w);
+    distractors.push(w[0]);
+  }
+
+  const options = shuffleArr([correctWord, ...distractors]);
+  st.s1options[blankId] = options;
+  return options;
+}
+
+// ═══════════════════════════════════════════════
+//  STAGE SWITCHING
+// ═══════════════════════════════════════════════
+function switchStage(n) {
+  document.querySelectorAll('.stage-tab').forEach((t, i) => t.classList.toggle('active', i + 1 === n));
+  document.querySelectorAll('.stage-panel').forEach((p, i) => p.classList.toggle('active', i + 1 === n));
+  hideOptionsPanel();
+}
+
+// ═══════════════════════════════════════════════
+//  STAGE 1
+// ═══════════════════════════════════════════════
+function renderS1(idx) {
+  const p = passages[idx];
+  const container = document.getElementById('s1-passage');
+  container.innerHTML = '';
+
+  p.segments.forEach(seg => {
+    if (seg.t === 'text') {
+      container.appendChild(document.createTextNode(seg.c));
+    } else {
+      const ans = st.s1answers[seg.id];
+      const btn = document.createElement('button');
+      btn.className = 'blank-btn';
+      btn.id = 'bb-' + seg.id;
+
+      if (ans) {
+        btn.textContent = ans.selected;
+        btn.classList.add(ans.isCorrect ? 'answered-correct' : 'answered-wrong');
+        btn.classList.add('answered');
+        if (!ans.isCorrect) btn.title = '可接受：' + seg.accept.join(' / ');
+      } else {
+        btn.innerHTML = `<span class="blank-hint">[${seg.hint}]</span>點擊選擇`;
+        btn.onclick = (e) => { e.stopPropagation(); openOptions(seg.id, seg.accept, btn); };
+      }
+      container.appendChild(btn);
+    }
+  });
+
+  document.getElementById('s1-counter').textContent = `第 ${idx+1} 篇 / 共 ${passages.length} 篇`;
+  document.getElementById('s1-title').textContent = p.title;
+  document.getElementById('s1-prev').disabled = idx === 0;
+  document.getElementById('s1-next').disabled = idx === passages.length - 1;
+  updateS1Score(idx);
+}
+
+function openOptions(blankId, accept, btnEl) {
+  // If same blank, toggle off
+  if (st.activeBlank && st.activeBlank.id === blankId) {
+    hideOptionsPanel();
+    return;
+  }
+
+  // Deactivate previous
+  if (st.activeBlank) {
+    const prev = document.getElementById('bb-' + st.activeBlank.id);
+    if (prev) prev.classList.remove('active-blank');
+  }
+
+  st.activeBlank = { id: blankId, accept, btnEl };
+  btnEl.classList.add('active-blank');
+
+  const options = makeOptions(blankId, accept);
+  const grid = document.getElementById('s1-options-grid');
+  grid.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-item';
+    btn.textContent = opt;
+    btn.onclick = () => pickOption(blankId, opt, accept);
+    grid.appendChild(btn);
+  });
+
+  const label = document.getElementById('s1-options-label');
+  label.textContent = `空格 [${accept[0]} 類] — 選擇適合的轉承詞：`;
+
+  const panel = document.getElementById('s1-options');
+  panel.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function hideOptionsPanel() {
+  document.getElementById('s1-options').classList.remove('show');
+  if (st.activeBlank) {
+    const btn = document.getElementById('bb-' + st.activeBlank.id);
+    if (btn && !btn.classList.contains('answered')) btn.classList.remove('active-blank');
+    st.activeBlank = null;
+  }
+}
+
+function pickOption(blankId, selected, accept) {
+  const isCorrect = accept.some(a => normalize(a) === normalize(selected));
+  st.s1answers[blankId] = { selected, isCorrect };
+  hideOptionsPanel();
+  renderS1(st.s1idx);
+}
+
+function updateS1Score(idx) {
+  const blanks = passages[idx].segments.filter(s => s.t === 'blank');
+  const answered = blanks.filter(b => st.s1answers[b.id]);
+  const correct = blanks.filter(b => st.s1answers[b.id]?.isCorrect);
+  if (answered.length === blanks.length) {
+    const box = document.getElementById('s1-score');
+    box.style.display = 'block';
+    document.getElementById('s1-score-num').textContent = `${correct.length} / ${blanks.length}`;
+    const pct = Math.round(correct.length / blanks.length * 100);
+    const msgs = ['再加油，繼續練習！', '不錯，繼續努力！', '很好！接近滿分了！', '完美！全部答對！'];
+    document.getElementById('s1-score-msg').textContent = pct < 50 ? msgs[0] : pct < 75 ? msgs[1] : pct < 100 ? msgs[2] : msgs[3];
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  STAGE 2
+// ═══════════════════════════════════════════════
+function renderS2(idx) {
+  const p = passages[idx];
+  const container = document.getElementById('s2-passage');
+  container.innerHTML = '';
+
+  p.segments.forEach(seg => {
+    if (seg.t === 'text') {
+      container.appendChild(document.createTextNode(seg.c));
+    } else {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'blank-input';
+      input.id = 'inp-' + seg.id;
+      input.placeholder = `[${seg.hint}]`;
+      input.dataset.accept = JSON.stringify(seg.accept);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') checkStage2(); });
+      container.appendChild(input);
+    }
+  });
+
+  document.getElementById('s2-counter').textContent = `第 ${idx+1} 篇 / 共 ${passages.length} 篇`;
+  document.getElementById('s2-title').textContent = p.title;
+  document.getElementById('s2-prev').disabled = idx === 0;
+  document.getElementById('s2-next').disabled = idx === passages.length - 1;
+  document.getElementById('s2-score').style.display = 'none';
+  document.getElementById('s2-answer-key').style.display = 'none';
+  document.getElementById('s2-check-btn').style.display = 'block';
+  document.getElementById('s2-reset-btn').style.display = 'none';
+}
+
+function checkStage2() {
+  const idx = st.s2idx;
+  const blanks = passages[idx].segments.filter(s => s.t === 'blank');
+  let correct = 0;
+  const rows = [];
+
+  blanks.forEach(blank => {
+    const input = document.getElementById('inp-' + blank.id);
+    const userVal = normalize(input.value);
+    const isOk = blank.accept.some(a => normalize(a) === userVal);
+    input.classList.remove('correct', 'wrong');
+    input.classList.add(isOk ? 'correct' : 'wrong');
+    input.disabled = true;
+    if (isOk) correct++;
+    rows.push({ hint: blank.hint, userVal: input.value, isOk, accept: blank.accept });
+  });
+
+  // Score
+  document.getElementById('s2-score').style.display = 'block';
+  document.getElementById('s2-score-num').textContent = `${correct} / ${blanks.length}`;
+  const pct = Math.round(correct / blanks.length * 100);
+  document.getElementById('s2-score-msg').textContent = pct === 100 ? '太棒了！全部正確！' : pct >= 75 ? '做得不錯！小錯誤而已！' : pct >= 50 ? '繼續加油，再看看參考答案！' : '多練習幾次，你可以的！';
+
+  // Answer key
+  const list = document.getElementById('s2-answers-list');
+  list.innerHTML = '';
+  rows.forEach((r, i) => {
+    const d = document.createElement('div');
+    d.className = 'answer-item';
+    const icon = r.isOk
+      ? `<span class="answer-correct-indicator">✓</span>`
+      : `<span class="answer-wrong-indicator">✗</span>`;
+    d.innerHTML = `${icon} <b>空格 ${i+1} [${r.hint}]</b>　你的答案：「${r.userVal || '（空白）'}」
+      <span class="answer-accepted">可接受：${r.accept.join(' / ')}</span>`;
+    list.appendChild(d);
+  });
+
+  document.getElementById('s2-answer-key').style.display = 'block';
+  document.getElementById('s2-check-btn').style.display = 'none';
+  document.getElementById('s2-reset-btn').style.display = 'block';
+}
+
+function resetStage2() {
+  renderS2(st.s2idx);
+}
+
+// ═══════════════════════════════════════════════
+//  PASSAGE NAVIGATION (shared)
+// ═══════════════════════════════════════════════
+function changePassage(stage, dir) {
+  if (stage === 1) {
+    st.s1idx = Math.max(0, Math.min(passages.length-1, st.s1idx + dir));
+    hideOptionsPanel();
+    renderS1(st.s1idx);
+  } else {
+    st.s2idx = Math.max(0, Math.min(passages.length-1, st.s2idx + dir));
+    renderS2(st.s2idx);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  STAGE 3
+// ═══════════════════════════════════════════════
+function initStage3() {
+  // Prompts
+  const sel = document.getElementById('prompt-selector');
+  prompts.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'prompt-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = p.label;
+    btn.onclick = () => selectPrompt(i);
+    sel.appendChild(btn);
+  });
+  selectPrompt(0);
+
+  // Hint categories
+  const hintWrap = document.getElementById('hint-cats');
+  Object.entries(transCats).forEach(([cat, words]) => {
+    const chip = document.createElement('button');
+    chip.className = 'hint-cat';
+    chip.textContent = cat;
+    chip.onclick = () => toggleHintWords(chip, cat, words);
+    hintWrap.appendChild(chip);
+  });
+
+  // Word counter
+  document.getElementById('essay-area').addEventListener('input', () => {
+    const txt = document.getElementById('essay-area').value;
+    const wc = txt.trim() ? txt.trim().split(/\s+/).length : 0;
+    document.getElementById('word-count').textContent = wc;
+  });
+}
+
+function selectPrompt(idx) {
+  st.promptIdx = idx;
+  document.querySelectorAll('.prompt-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+  document.getElementById('current-prompt').textContent = prompts[idx].text;
+  document.getElementById('essay-feedback').style.display = 'none';
+}
+
+function toggleHintWords(chip, cat, words) {
+  const box = document.getElementById('hint-words-box');
+  const isOpen = chip.classList.contains('open');
+  // close all
+  document.querySelectorAll('.hint-cat').forEach(c => c.classList.remove('open'));
+  if (isOpen) { box.classList.remove('show'); return; }
+  chip.classList.add('open');
+  box.innerHTML = `<b>${cat}：</b>${words.join(' &nbsp;/&nbsp; ')}`;
+  box.classList.add('show');
+}
+
+function clearEssay() {
+  document.getElementById('essay-area').value = '';
+  document.getElementById('word-count').textContent = '0';
+  document.getElementById('essay-feedback').style.display = 'none';
+}
+
+function analyzeEssay() {
+  const text = document.getElementById('essay-area').value;
+  if (!text.trim()) { alert('請先寫一段文章！'); return; }
+
+  const lower = text.toLowerCase();
+
+  // Build sorted phrase list (longest first to avoid partial matches)
+  const allPhrases = [];
+  Object.entries(transCats).forEach(([cat, words]) => {
+    words.forEach(w => allPhrases.push({ word: w, cat }));
+  });
+  allPhrases.sort((a, b) => b.word.length - a.word.length);
+
+  // Find match positions
+  const hits = []; // { start, end, word, cat }
+  const usedPos = new Set();
+
+  allPhrases.forEach(({ word, cat }) => {
+    const esc = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp('(?<![a-z])' + esc + '(?![a-z])', 'gi');
+    let m;
+    while ((m = regex.exec(lower)) !== null) {
+      const s = m.index, e = s + m[0].length;
+      let overlap = false;
+      for (let i = s; i < e; i++) if (usedPos.has(i)) { overlap = true; break; }
+      if (!overlap) {
+        for (let i = s; i < e; i++) usedPos.add(i);
+        hits.push({ start: s, end: e, word: text.slice(s, e), cat });
+      }
+    }
+  });
+
+  hits.sort((a, b) => a.start - b.start);
+
+  // Build highlighted HTML
+  let html = '';
+  let i = 0;
+  hits.forEach(h => {
+    html += escHtml(text.slice(i, h.start));
+    html += `<span class="hw" title="${h.cat}">${escHtml(h.word)}</span>`;
+    i = h.end;
+  });
+  html += escHtml(text.slice(i));
+
+  // Unique categories used
+  const usedCats = new Set(hits.map(h => h.cat));
+  const foundByCat = {};
+  hits.forEach(h => {
+    if (!foundByCat[h.cat]) foundByCat[h.cat] = [];
+    if (!foundByCat[h.cat].includes(h.word.toLowerCase())) foundByCat[h.cat].push(h.word.toLowerCase());
+  });
+
+  // Show results
+  document.getElementById('essay-score-num').textContent = usedCats.size;
+  const total = Object.keys(transCats).length;
+  document.getElementById('essay-score-sub').textContent =
+    `共偵測到 ${hits.length} 個轉承詞，覆蓋 ${usedCats.size}/${total} 個類別`;
+  document.getElementById('highlighted-text').innerHTML = html;
+
+  // Category chips
+  const grid = document.getElementById('category-results');
+  grid.innerHTML = '';
+  Object.entries(transCats).forEach(([cat, words]) => {
+    const used = usedCats.has(cat);
+    const chip = document.createElement('div');
+    chip.className = 'cat-chip ' + (used ? 'used' : 'not-used');
+    const wordStr = used ? foundByCat[cat].join(', ') : '尚未使用';
+    chip.innerHTML = `<span class="cn">${used ? '✓' : '○'} ${cat}</span><span class="cw">${wordStr}</span>`;
+    grid.appendChild(chip);
+  });
+
+  document.getElementById('essay-feedback').style.display = 'block';
+  document.getElementById('essay-feedback').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.blank-btn') && !e.target.closest('.options-panel')) {
+    hideOptionsPanel();
+  }
+});
+
+renderS1(0);
+renderS2(0);
+initStage3();
+</script>
+</body>
+</html>
